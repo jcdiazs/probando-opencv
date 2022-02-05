@@ -2,7 +2,7 @@ from cv2 import cv2
 import numpy as np
 
 def ordenarpuntos(puntos):
-    n_puntos=np.concatenate(puntos[0], puntos[1], puntos[2], puntos[3]).tolist()
+    n_puntos=np.concatenate([puntos[0], puntos[1], puntos[2], puntos[3]]).tolist()
     y_order=sorted(n_puntos, key=lambda n_puntos:n_puntos[1])
     x1_order=y_order[:2]
     x1_order=sorted(x1_order,key=lambda x1_order:x1_order[0])
@@ -14,10 +14,10 @@ def ordenarpuntos(puntos):
 def alineamiento(imagen,ancho,alto):
     imagen_alineada=None
     grises=cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
-    tipoumbral,umbral=cv2.trreshold(grises, 150,255,cv2.THRESH.BINARY)
-    cv2.imshor("Umbral", umbral)
-    contorno, jerarquia=cv2.findContours(umbral, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
-    contorno=sorted(contorno, key=cv2.contourArea, reverse=True)
+    tipoumbral,umbral=cv2.threshold(grises, 150,255,cv2.THRESH.BINARY)
+    cv2.imshow("Umbral", umbral)
+    contorno=cv2.findContours(umbral, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+    contorno=sorted(contorno, key=cv2.contourArea, reverse=True)[:1]
     for c in contorno:
         #https://docs.opencv.org/4.x/dd/d49/tutorial_py_contour_features.html
 
@@ -31,7 +31,7 @@ def alineamiento(imagen,ancho,alto):
             imagen_alineada=cv2.warpPerspective(imagen, M, (ancho,alto))
 
     return imagen_alineada
-capturaVideo=cv2.videoCapture(0)
+capturaVideo=cv2.VideoCapture(0)
 
 while True:
     tipocamara, camara=capturaVideo.read()
@@ -52,14 +52,14 @@ while True:
     Alto           677px
 
     '''
-    imagen_A6=alineamiento(camara, ancho=480, alto=677)
+    imagen_A6=alineamiento(camara, ancho=480, alto=6775)
     if imagen_A6 is not None:
         puntos=[]
         imagen_gris=cv2.cvtColor(imagen_A6, cv2.COLOR_BGR2GRAY)
         blur=cv2.GaussianBlur(imagen_gris,(5,5),1)
         _,umbral2=cv2.threshold(blur,0,255,cv2.THRESH_OTSU+cv2.THRESH_BINARY_INV)
         cv2.imshow("Umbral", umbral2)
-        contorno2,jerarquia2=cv2.findContours(umbral2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+        contorno2=cv2.findContours(umbral2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
         cv2.drawContours(imagen_A6, contorno2, -1, (255,0,0), 2)
         suma1=0.0
         suma2=0.0
@@ -85,8 +85,27 @@ while True:
            #convertir a pixeles 
            #area*ancho(de la hoja)/anchopixeles
            #Seria, pixeles para 1bs: 12.52475
+           #12524.75
            #pixeles para 50ctvs: 9.89603125
-            if
+           #9896.03125
+            if area<9996 and area>8000:
+                font=cv2.FONT_HERSHEY_SIMPLEX
+                cv2.putText(imagen_A6, "50 ctvs", (x,y), font, 0.75, (0,255,0),2)
+                suma1=suma1+0.2
+
+            if area<11524 and area>9000:
+                font=cv2.FONT_HERSHEY_SIMPLEX
+                cv2.putText(imagen_A6, "1Bs", (x,y), font, 0.75, (0,255,0),2)
+                suma2=suma2+0.1
+        total= suma1+suma2
+        print("La suma total de las monedas es:", round(total,2))
+        cv2.imshow("Imagen A6", imagen_A6)
+        cv2.imshow("Camara", camara)
+    if cv2.waitKey(1)==ord("e"):
+        break 
+capturaVideo.release()
+cv2.destroyAllWindows()
+
 
     
 
